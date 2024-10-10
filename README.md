@@ -53,7 +53,7 @@ And you want something like this:
 You can do so by enabling nix flakes and run the following command in your shell:
 
 ```shell
-nix run github:sempruijs/json2nix [inputfile] [output]
+nix run github:cloudandheat/json2nix [inputfile] [output]
 ```
 
 Both arguments may be omitted or set to "-" in which case json2nix will read from stdin resp. write to stdout.
@@ -63,11 +63,11 @@ Both arguments may be omitted or set to "-" in which case json2nix will read fro
 By virtue of [yq](https://github.com/kislyuk/yq), this flake also contains two packages `yaml2nix` and `toml2nix` that can be used just like `json2nix`:
 
 ```shell
-nix run github:sempruijs/json2nix#yaml2nix [inputfile] [output]
+nix run github:cloudandheat/json2nix#yaml2nix [inputfile] [output]
 ```
 
 ```shell
-nix run github:sempruijs/json2nix#toml2nix [inputfile] [output]
+nix run github:cloudandheat/json2nix#toml2nix [inputfile] [output]
 ```
 
 
