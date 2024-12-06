@@ -20,6 +20,7 @@ export def "to nix" [
     --raw (-r) # remove all unnecessary whitespace
     --indent (-i): number = 2 # specify indentation width
     --tabs (-t): number # specify indentation tab quantity
+    --strip-outer-bracket # strip the brackets of the outermost list or attribute set, so the result can be pasted verbatim into an existing list / attrset
     ]: any -> string {
     let value = $in
 
@@ -28,12 +29,17 @@ export def "to nix" [
     let brac_sep = if ($raw) {""} else {"\n"}
     let attr_eq_sep = if ($raw) {""} else {" "}
 
+    let list_lbrac = if ($strip_outer_bracket) {""} else {"["}
+    let list_rbrac = if ($strip_outer_bracket) {""} else {"]"}
+    let attr_lbrac = if ($strip_outer_bracket) {""} else {"{"}
+    let attr_rbrac = if ($strip_outer_bracket) {""} else {"}"}
+
     let to_nix = {|| to nix --raw=$raw --indent=$indent --tabs=$tabs }
 
     let indentation = (match [$raw, $indent, $tabs] {
-        [true, $i, $t] => ("")
+        [true, _, _] => ("")
         [false, $i, null] => (" " | repeat $i)
-        [false, $i, $t] => ("\t" | repeat $t)
+        [false, _, $t] => ("\t" | repeat $t)
     } | str join)
 
     match ($value | describe -d | get type) {
@@ -44,13 +50,13 @@ export def "to nix" [
         table|list => (
             $value | each {|v|
                 $v | do $to_nix | $"($in)"
-            } | str join $list_sep | indent_lines $indentation | $"[($brac_sep)($in)($brac_sep)]"
+            } | str join $list_sep | indent_lines $indentation | $"($list_lbrac)($brac_sep)($in)($brac_sep)($list_rbrac)"
         )
 
         record => (
             $value | transpose k v | each {|it|
                 $"($it.k | quote_key)($attr_eq_sep)=($attr_eq_sep)($it.v | do $to_nix);"
-            } | str join $attr_sep | indent_lines $indentation | $"{($brac_sep)($in)($brac_sep)}"
+            } | str join $attr_sep | indent_lines $indentation | $"($attr_lbrac)($brac_sep)($in)($brac_sep)($attr_rbrac)"
         )
 
         $e => (print $"ERROR: Unknown type ($e)"; exit )
