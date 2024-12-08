@@ -1,17 +1,23 @@
 use std repeat
 
-# Escapes string if it contains anything other than alphanumeric, dash or underscore
-def escape_key [] {
+# Quotes and escapes string
+def escape_string []: string -> string {
+    to json | str replace -a `${` `\${`
+}
+
+# Quotes and escapes string only if it contains anything other than alphanumeric, dash or underscore
+def escape_key []: string -> string {
     let key = $in
 
-    if (($key | find -r "^[a-zA-Z_][a-zA-Z_0-9-]+$") == null) {
-        $key | to json
+    if (($key | find -r `^[a-zA-Z_][a-zA-Z_0-9-]+$`) == null) {
+        $key | escape_string
     } else {
         $key
     }
 }
 
-def indent_lines [indent: string] {
+# Prepends the argument to each line of the input
+def indent_lines [indent: string]: string -> string {
     lines | each {|line| $"($indent)($line)"} | str join "\n"
 }
 
@@ -43,7 +49,9 @@ export def "to nix" [
     } | str join)
 
     match ($value | describe -d | get type) {
-        nothing|bool|string => ($value | to json)
+        nothing|bool => ($value | to json)
+        
+        string => ($value | escape_string)
 
         int|float => (if ($value < 0) {$"\(($value)\)"} else {$value})
 
