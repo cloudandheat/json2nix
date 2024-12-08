@@ -1,11 +1,11 @@
 use std repeat
 
-# Quotes string if it contains anything other than alphanumeric, dash or underscore
-def quote_key [] {
+# Escapes string if it contains anything other than alphanumeric, dash or underscore
+def escape_key [] {
     let key = $in
 
-    if (($key | find -r "^[a-zA-Z0-9-_]+$") == null) {
-        $'"($key)"'
+    if (($key | find -r "^[a-zA-Z_][a-zA-Z_0-9-]+$") == null) {
+        $key | to json
     } else {
         $key
     }
@@ -55,7 +55,7 @@ export def "to nix" [
 
         record => (
             $value | transpose k v | each {|it|
-                $"($it.k | quote_key)($attr_eq_sep)=($attr_eq_sep)($it.v | do $to_nix);"
+                $"($it.k | escape_key)($attr_eq_sep)=($attr_eq_sep)($it.v | do $to_nix);"
             } | str join $attr_sep | indent_lines $indentation | $"($attr_lbrac)($brac_sep)($in)($brac_sep)($attr_rbrac)"
         )
 
