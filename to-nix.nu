@@ -21,7 +21,7 @@ def indent_lines [indent: string]: string -> string {
     lines | each {|line| $"($indent)($line)"} | str join "\n"
 }
 
-# Converts table data into Nix.
+# Converts structured data into Nix.
 export def "to nix" [
     --raw (-r) # remove all unnecessary whitespace
     --indent (-i): number = 2 # specify indentation width
