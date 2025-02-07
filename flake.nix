@@ -35,5 +35,15 @@
           default = json2nix;
         };
       };
+      flake = {
+        homeManagerModules = rec {
+          default = nushellIntegration;
+          nushellIntegration = {
+            programs.nushell.extraConfig = ''
+              use ${self}/to-nix.nu *
+            '';
+          };
+        };
+      };
     };
 }
