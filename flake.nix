@@ -36,6 +36,9 @@
         };
       };
       flake = {
+        overlays.default = final: prev: {
+          inherit (self.packages.${prev.system}) json2nix yaml2nix toml2nix;
+        };
         homeManagerModules = rec {
           default = nushellIntegration;
           nushellIntegration = {
