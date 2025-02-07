@@ -16,7 +16,7 @@
           builder = inputFormat:
             pkgs.writeScriptBin "${inputFormat}2nix" ''
               #!${pkgs.nushell}/bin/nu --stdin
-              use ${./.}/to-nix.nu *
+              use ${self}/to-nix.nu *
 
               # Convert ${inputFormat} to nix
               def main [
