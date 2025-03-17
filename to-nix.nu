@@ -32,7 +32,7 @@ export def "to nix" [
 
     let list_sep = if ($raw) {" "} else {"\n"}
     let attr_sep = if ($raw) {""} else {"\n"}
-    let brac_sep = if ($raw) {""} else {"\n"}
+    let brac_sep = if ($raw or $strip_outer_bracket) {""} else {"\n"}
     let attr_eq_sep = if ($raw) {""} else {" "}
 
     let list_lbrac = if ($strip_outer_bracket) {""} else {"["}
@@ -42,10 +42,11 @@ export def "to nix" [
 
     let to_nix = {|| to nix --raw=$raw --indent=$indent --tabs=$tabs }
 
-    let indentation = (match [$raw, $indent, $tabs] {
-        [true, _, _] => ("")
-        [false, $i, null] => (" " | repeat $i)
-        [false, _, $t] => ("\t" | repeat $t)
+    let indentation = (match [$raw, $indent, $tabs, $strip_outer_bracket] {
+        [_, _, _, true] => ("")
+        [true, _, _, _] => ("")
+        [false, $i, null, _] => (" " | repeat $i)
+        [false, _, $t, _] => ("\t" | repeat $t)
     } | str join)
 
     match ($value | describe -d | get type) {
