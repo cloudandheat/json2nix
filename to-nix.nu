@@ -27,6 +27,7 @@ export def "to nix" [
     --indent (-i): number = 2 # specify indentation width
     --tabs (-t): number # specify indentation tab quantity
     --strip-outer-bracket # strip the brackets of the outermost list or attribute set, so the result can be pasted verbatim into an existing list / attrset
+    --prefix: list<string> = []
     ]: any -> string {
     let value = $in
 
@@ -40,7 +41,7 @@ export def "to nix" [
     let attr_lbrac = if ($strip_outer_bracket) {""} else {"{"}
     let attr_rbrac = if ($strip_outer_bracket) {""} else {"}"}
 
-    let to_nix = {|| to nix --raw=$raw --indent=$indent --tabs=$tabs }
+    let to_nix = {|prefix| to nix --raw=$raw --indent=$indent --tabs=$tabs --prefix=$prefix }
 
     let indentation = (match [$raw, $indent, $tabs, $strip_outer_bracket] {
         [_, _, _, true] => ("")
@@ -58,13 +59,13 @@ export def "to nix" [
 
         table|list => (
             $value | each {|v|
-                $v | do $to_nix | $"($in)"
+                $v | do $to_nix [] | $"($in)"
             } | str join $list_sep | indent_lines $indentation | $"($list_lbrac)($brac_sep)($in)($brac_sep)($list_rbrac)"
         )
 
         record => (
             $value | transpose k v | each {|it|
-                $"($it.k | escape_key)($attr_eq_sep)=($attr_eq_sep)($it.v | do $to_nix);"
+                $"($prefix | append $it.k | each {|k| $k | escape_key} | str join ".")($attr_eq_sep)=($attr_eq_sep)($it.v | do $to_nix []);"
             } | str join $attr_sep | indent_lines $indentation | $"($attr_lbrac)($brac_sep)($in)($brac_sep)($attr_rbrac)"
         )
 
