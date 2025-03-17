@@ -24,8 +24,9 @@
                 --indent (-i): number = 2 # specify indentation width
                 --tabs (-t): number # specify indentation tab quantity
                 --strip-outer-bracket # strip the brackets of the outermost list or attribute set, so the result can be pasted verbatim into an existing list / attrset
+                --path-notation (-p), # Use path notation if an attribute set only contains a single value
                 ]: string -> string {
-                  from ${inputFormat} | to nix --raw=$raw --indent=$indent --tabs=$tabs --strip-outer-bracket=$strip_outer_bracket
+                  from ${inputFormat} | to nix --raw=$raw --indent=$indent --tabs=$tabs --strip-outer-bracket=$strip_outer_bracket --path-notation=$path_notation
               }
             '';
         in rec {

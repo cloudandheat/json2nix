@@ -28,6 +28,7 @@ export def "to nix" [
     --tabs (-t): number # specify indentation tab quantity
     --strip-outer-bracket # strip the brackets of the outermost list or attribute set, so the result can be pasted verbatim into an existing list / attrset
     --prefix: list<string> = []
+    --path-notation (-p) # Use path notation if an attribute set only contains a single value
     ]: any -> string {
     let value = $in
 
@@ -41,7 +42,7 @@ export def "to nix" [
     let attr_lbrac = if ($strip_outer_bracket) {""} else {"{"}
     let attr_rbrac = if ($strip_outer_bracket) {""} else {"}"}
 
-    let to_nix = {|prefix| to nix --raw=$raw --indent=$indent --tabs=$tabs --prefix=$prefix }
+    let to_nix = {|prefix, strip=false| to nix --raw=$raw --indent=$indent --tabs=$tabs --path-notation=$path_notation --strip-outer-bracket=$strip --prefix=$prefix }
 
     let indentation = (match [$raw, $indent, $tabs, $strip_outer_bracket] {
         [_, _, _, true] => ("")
@@ -65,7 +66,11 @@ export def "to nix" [
 
         record => (
             $value | transpose k v | each {|it|
-                $"($prefix | append $it.k | each {|k| $k | escape_key} | str join ".")($attr_eq_sep)=($attr_eq_sep)($it.v | do $to_nix []);"
+                if ( $path_notation and (($it.v | describe -d | get type) == "record") and (($it.v | transpose | length) == 1)) {
+                    $it.v | do $to_nix ($prefix | append $it.k) true
+                } else {
+                    $"($prefix | append $it.k | each {|k| $k | escape_key} | str join ".")($attr_eq_sep)=($attr_eq_sep)($it.v | do $to_nix []);"
+                }
             } | str join $attr_sep | indent_lines $indentation | $"($attr_lbrac)($brac_sep)($in)($brac_sep)($attr_rbrac)"
         )
 
