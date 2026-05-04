@@ -9,7 +9,10 @@ def escape_string []: string -> string {
 def escape_key []: string -> string {
     let key = $in
 
-    if (($key | find -r `^[a-zA-Z_][a-zA-Z_0-9-]*$`) == null) {
+    if (
+        (($key | find -r `^[a-zA-Z_][a-zA-Z_0-9-]*$`) == null) or
+        ($key in ["if" "then" "else" "let" "in" "with" "assert" "rec" "inherit"])
+    ) {
         $key | escape_string
     } else {
         $key
